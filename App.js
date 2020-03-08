@@ -1,7 +1,8 @@
 import React from 'react';
-import { StyleSheet, Text, View, TouchableOpacity } from 'react-native';
+import { StyleSheet, Text, View, TouchableOpacity, Platform } from 'react-native';
 import { Camera } from 'expo-camera';
 import * as Permissions from 'expo-permissions';
+import * as ImagePicker from 'expo-image-picker';
 import { FontAwesome, Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 
 
@@ -13,8 +14,36 @@ export default class App extends React.Component {
   };
 
   async componentDidMount() {
+    this.getPermissionAsync()
+  }
+  getPermissionAsync = async () => {
+    // Camera roll Permission 
+    if (Platform.OS === 'ios') {
+      const { status } = await Permissions.askAsync(Permissions.CAMERA_ROLL);
+      if (status !== 'granted') {
+        alert('Sorry, we need camera roll permissions to make this work!');
+      }
+    }
+    // Camera Permission
     const { status } = await Permissions.askAsync(Permissions.CAMERA);
     this.setState({ hasPermission: status === 'granted' });
+  }
+
+  takePicture = async () => {
+    if (this.camera) {
+      let photo = await this.camera.takePictureAsync();
+    }
+  }
+
+  handleCameraType = () => {
+    const { cameraType } = this.state
+
+    this.setState({
+      cameraType:
+        cameraType === Camera.Constants.Type.back
+          ? Camera.Constants.Type.front
+          : Camera.Constants.Type.back
+    })
   }
 
   render() {
@@ -26,7 +55,10 @@ export default class App extends React.Component {
     } else {
       return (
         <View style={{ flex: 1 }}>
-          <Camera style={{ flex: 1 }} type={this.state.cameraType}>
+          <Camera style={{ flex: 1 }} type={this.state.cameraType}
+            ref={ref => {
+              this.camera = ref;
+            }}>
             <View style={{ flex: 1, flexDirection: "row", justifyContent: "space-between", margin: 20 }}>
               <TouchableOpacity
                 style={{
@@ -55,7 +87,9 @@ export default class App extends React.Component {
                   alignSelf: 'flex-end',
                   alignItems: 'center',
                   backgroundColor: 'transparent',
-                }}>
+                }}
+                onPress={() => this.handleCameraType()}
+              >
                 <MaterialCommunityIcons
                   name="camera-switch"
                   style={{ color: "blue", fontSize: 40 }}
