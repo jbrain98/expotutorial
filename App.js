@@ -16,6 +16,7 @@ export default class App extends React.Component {
   async componentDidMount() {
     this.getPermissionAsync()
   }
+
   getPermissionAsync = async () => {
     // Camera roll Permission 
     if (Platform.OS === 'ios') {
@@ -27,6 +28,12 @@ export default class App extends React.Component {
     // Camera Permission
     const { status } = await Permissions.askAsync(Permissions.CAMERA);
     this.setState({ hasPermission: status === 'granted' });
+  }
+
+  pickImage = async () => {
+    let result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+    });
   }
 
   takePicture = async () => {
@@ -65,7 +72,9 @@ export default class App extends React.Component {
                   alignSelf: 'flex-end',
                   alignItems: 'center',
                   backgroundColor: 'transparent',
-                }}>
+                }}
+                onPress={() => this.pickImage()}
+              >
                 <Ionicons
                   name="ios-photos"
                   style={{ color: "green", fontSize: 40 }}
